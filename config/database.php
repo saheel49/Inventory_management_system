@@ -71,6 +71,7 @@ class Database {
         ) ENGINE=InnoDB");
 
         $this->conn->query("ALTER TABLE product_varieties ADD COLUMN IF NOT EXISTS unit_price DECIMAL(15,2) NOT NULL DEFAULT 0.00");
+        $this->conn->query("ALTER TABLE product_varieties ADD COLUMN IF NOT EXISTS unit VARCHAR(50) DEFAULT ''");
     }
 
     public function getConnection() {

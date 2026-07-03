@@ -86,6 +86,31 @@ function doIndex(){
 </div>
 </form>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  var dm = document.getElementById('dmToggle');
+  if(!dm) return;
+  function applyLocalTheme(theme){
+    var dark = theme === 'dark';
+    document.documentElement.classList.toggle('dark-mode', dark);
+    document.body.classList.toggle('dark-mode', dark);
+    var icon = document.getElementById('themeIcon');
+    var btn  = document.getElementById('themeToggle');
+    if(icon) icon.className = dark ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+    if(btn) btn.title = dark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    try{ localStorage.setItem('inventory_theme', theme); }catch(e){}
+  }
+  dm.addEventListener('change', function(){
+    var theme = dm.checked ? 'dark' : 'light';
+    applyLocalTheme(theme);
+    // update server session + user preference immediately
+    fetch(window.BASE_URL + '/tools/toggle_theme.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ theme: theme })
+    }).catch(function(){});
+  });
+});
+</script>
 <?php require __DIR__.'/../includes/footer.php';
 }
 
@@ -103,8 +128,14 @@ function doUpdate(){
   foreach($map as $k=>$v){ $st->bind_param('ss',$v,$k); $st->execute(); }
   $st->close(); $db->close();
   log_activity('settings_update','Updated settings');
+  // Persist preference to session so server-side rendering honors it
+  $_SESSION['dark_mode'] = ($map['dark_mode']==='1') ? 1 : 0;
+  // Return a small response that updates localStorage then redirects
+  $theme = $_SESSION['dark_mode'] ? 'dark' : 'light';
   $_SESSION['success']='Settings saved successfully.';
-  header('Location: index.php'); exit;
+  $db->close();
+  echo "<!doctype html><html><head><meta charset=\"utf-8\"></head><body><script>try{localStorage.setItem('inventory_theme', '". $theme ."');}catch(e){}window.location='index.php';</script></body></html>";
+  exit;
 }
 
 function doBackup(){

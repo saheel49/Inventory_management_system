@@ -21,8 +21,8 @@
   // Debug: log navigation and session info to backups/nav_debug.log (temporary)
   try {
     $nf = __DIR__ . '/../backups/nav_debug.log';
-    $data = date('Y-m-d H:i:s') . "\t" . ($_SERVER['REQUEST_METHOD']??'-') . "\t" . ($_SERVER['REQUEST_URI']??'-') . "\t" . (isset($_SESSION['user_id'])?$_SESSION['user_id']:'no-session') . "\t" . ($_SERVER['HTTP_REFERER']??'-') . "\n";
-    @file_put_contents($nf, $data, FILE_APPEND | LOCK_EX);
+    $nav_log_entry = date('Y-m-d H:i:s') . "\t" . ($_SERVER['REQUEST_METHOD']??'-') . "\t" . ($_SERVER['REQUEST_URI']??'-') . "\t" . (isset($_SESSION['user_id'])?$_SESSION['user_id']:'no-session') . "\t" . ($_SERVER['HTTP_REFERER']??'-') . "\n";
+    @file_put_contents($nf, $nav_log_entry, FILE_APPEND | LOCK_EX);
   } catch (Exception $e) {}
 ?>
 <script>

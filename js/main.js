@@ -265,12 +265,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('.alert-close').forEach(b => b.addEventListener('click', () => b.closest('.alert')?.remove()));
 });
 
-/* ---- BACK TO TOP ---- */
+/* ---- BACK TO TOP / SCROLL TO BOTTOM ---- */
 document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('backToTop');
-  if (!btn) return;
-  window.addEventListener('scroll', () => btn.classList.toggle('visible', window.scrollY > 320));
-  btn.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+  const topBtn = document.getElementById('backToTop');
+  const bottomBtn = document.getElementById('scrollToBottom');
+  if (!topBtn && !bottomBtn) return;
+
+  window.addEventListener('scroll', () => {
+    if (topBtn) topBtn.classList.toggle('visible', window.scrollY > 320);
+    if (bottomBtn) {
+      const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 120;
+      bottomBtn.classList.toggle('visible', !atBottom);
+    }
+  });
+
+  if (topBtn) topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+  if (bottomBtn) bottomBtn.addEventListener('click', () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' }));
 });
 
 /* ---- LEDGER KEYBOARD NAV ---- */

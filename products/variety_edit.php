@@ -8,10 +8,15 @@ $vid = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if(!$vid){ header('Location: index.php'); exit; }
 
 $db = getDB();
-$vs = $db->prepare("SELECT v.*,p.name pname,p.id pid FROM product_varieties v JOIN products p ON v.product_id=p.id WHERE v.id=?");
+$vs = $db->prepare("SELECT v.*,p.name pname,p.id pid,p.unit,p.category FROM product_varieties v JOIN products p ON v.product_id=p.id WHERE v.id=?");
 $vs->bind_param('i',$vid); $vs->execute();
 $variety = $vs->get_result()->fetch_assoc(); $vs->close();
 if(!$variety){ $db->close(); header('Location: index.php'); exit; }
+
+$standard_units = [
+  'pcs'=>'Pieces','kg'=>'Kilograms','gram'=>'Grams','liter'=>'Liters','meter'=>'Meters','yard'=>'Yards',
+  'bag'=>'Bags','box'=>'Boxes','roll'=>'Rolls','set'=>'Sets','pair'=>'Pairs','dozen'=>'Dozen'
+];
 
 $errors = []; $success = '';
 
@@ -27,13 +32,18 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
         header('Location: index.php?action=edit&id='.$variety['pid']); exit;
     }
 
-    $name       = trim($_POST['name'] ?? '');
-    $unit_price = (float)($_POST['unit_price'] ?? 0);
-    $adj_type   = $_POST['adj_type'] ?? 'none';
-    $adj_qty    = (float)($_POST['adj_qty'] ?? 0);
-    $adj_note   = trim($_POST['adj_note'] ?? '');
+    $name            = trim($_POST['name'] ?? '');
+    $unit_price      = (float)($_POST['unit_price'] ?? 0);
+    $product_name    = trim($_POST['product_name'] ?? '');
+    $product_category= trim($_POST['product_category'] ?? '');
+    $product_unit    = trim($_POST['product_unit'] ?? 'pcs');
+    $product_unit_custom = trim($_POST['product_unit_custom'] ?? '');
+    $adj_type        = $_POST['adj_type'] ?? 'none';
+    $adj_qty         = (float)($_POST['adj_qty'] ?? 0);
+    $adj_note        = trim($_POST['adj_note'] ?? '');
 
     if(!$name) $errors[] = 'Variety name is required.';
+    if(!$product_name) $errors[] = 'Product name is required.';
     else {
         $dup = $db->prepare("SELECT COUNT(*) c FROM product_varieties WHERE LOWER(name)=LOWER(?) AND product_id=? AND id!=?");
         $dup->bind_param('sii',$name,$variety['pid'],$vid); $dup->execute();
@@ -42,9 +52,15 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
     }
 
     if(empty($errors)){
-        // Update name and unit price
+        // Update variety details
         $up = $db->prepare("UPDATE product_varieties SET name=?, unit_price=? WHERE id=?");
         $up->bind_param('sdi',$name,$unit_price,$vid); $up->execute(); $up->close();
+
+        // Update product reference data when editing from variety page
+        $product_unit_value = $product_unit_custom !== '' ? $product_unit_custom : $product_unit;
+        $pu = $db->prepare("UPDATE products SET name=?, category=?, unit=? WHERE id=?");
+        $pu->bind_param('sssi',$product_name,$product_category,$product_unit_value,$variety['pid']);
+        $pu->execute(); $pu->close();
 
         // Stock adjustment
         if($adj_type !== 'none' && $adj_qty > 0){
@@ -73,7 +89,7 @@ if($_SERVER['REQUEST_METHOD']==='POST'){
 }
 
 // Reload variety after possible update
-$vs2 = $db->prepare("SELECT v.*,p.name pname,p.id pid FROM product_varieties v JOIN products p ON v.product_id=p.id WHERE v.id=?");
+$vs2 = $db->prepare("SELECT v.*,p.name pname,p.id pid,p.unit,p.category FROM product_varieties v JOIN products p ON v.product_id=p.id WHERE v.id=?");
 $vs2->bind_param('i',$vid); $vs2->execute();
 $variety = $vs2->get_result()->fetch_assoc(); $vs2->close();
 
@@ -119,20 +135,65 @@ require __DIR__.'/../includes/header.php';
     <div class="card-header"><div class="card-title"><i class="fa-solid fa-pen"></i> Update Variety Details</div></div>
     <form method="POST">
       <input type="hidden" name="action" value="update">
-      <div class="form-group">
-        <label class="form-label">Variety Name <span class="req">*</span></label>
-        <div class="input-wrap"><i class="fi fa-solid fa-tag"></i>
-        <input type="text" name="name" class="form-control" required value="<?php echo htmlspecialchars($variety['name']);?>"></div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Unit Price</label>
-        <div class="input-wrap"><i class="fi fa-solid fa-dollar-sign"></i>
-        <input type="number" name="unit_price" class="form-control" step="0.01" min="0" value="<?php echo number_format($variety['unit_price']??0,2,'.','');?>"></div>
-        <p class="form-hint">Used to calculate transaction values.</p>
+
+      <div class="section-title">General Information</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Variety Name <span class="req">*</span></label>
+          <div class="input-wrap"><i class="fi fa-solid fa-tag"></i>
+          <input type="text" name="name" class="form-control" required value="<?php echo htmlspecialchars($variety['name']);?>"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit Price</label>
+          <div class="input-wrap"><i class="fi fa-solid fa-dollar-sign"></i>
+          <input type="number" name="unit_price" class="form-control" step="0.01" min="0" value="<?php echo number_format($variety['unit_price']??0,2,'.','');?>"></div>
+          <p class="form-hint">Used to calculate transaction values.</p>
+        </div>
       </div>
 
+      <div class="section-title">Product Reference</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Product Name <span class="req">*</span></label>
+          <input type="text" name="product_name" class="form-control" required value="<?php echo htmlspecialchars($variety['pname']);?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Unit</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;">
+            <select name="product_unit" class="form-control">
+              <?php foreach($standard_units as $k=>$label): ?>
+              <option value="<?php echo $k; ?>" <?php echo ($variety['unit'] === $k ? 'selected' : ''); ?>><?php echo $label; ?></option>
+              <?php endforeach; ?>
+            </select>
+            <input type="text" name="product_unit_custom" class="form-control" placeholder="Custom unit" value="<?php echo in_array($variety['unit'], array_keys($standard_units)) ? '' : htmlspecialchars($variety['unit']); ?>">
+          </div>
+          <p class="form-hint">Choose a standard unit or enter a custom unit like cartons, sheets, or tubes.</p>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          <input type="text" name="product_category" class="form-control" value="<?php echo htmlspecialchars($variety['category'] ?? ''); ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Current Stock</label>
+          <input type="text" class="form-control" disabled value="<?php echo number_format($variety['current_stock'],3);?>">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Created</label>
+          <input type="text" class="form-control" disabled value="<?php echo htmlspecialchars($variety['created_at'] ?? ''); ?>">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Updated</label>
+          <input type="text" class="form-control" disabled value="<?php echo htmlspecialchars($variety['updated_at'] ?? ''); ?>">
+        </div>
+      </div>
+
+      <div class="section-title">Stock Adjustment</div>
       <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px;">
-        <label class="form-label">Stock Adjustment</label>
+        <label class="form-label">Adjustment Type</label>
         <div style="display:flex;gap:10px;margin-bottom:12px;">
           <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text-1);">
             <input type="radio" name="adj_type" value="none" checked onchange="toggleAdj(this.value)"> No Adjustment

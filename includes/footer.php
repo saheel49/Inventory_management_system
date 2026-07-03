@@ -8,7 +8,6 @@
       <span class="footer-version">v3.0</span>
     </div>
     <div class="footer-center">
-      <i class="fa-solid fa-code" style="font-size:11px;margin-right:5px;opacity:.6;"></i>
       Created by <strong>Saheel Amir</strong>
       <span class="footer-sep">·</span>
       <span><?php echo date('Y'); ?></span>
@@ -27,6 +26,9 @@
 
 <button id="backToTop" title="Back to top" aria-label="Back to top">
   <i class="fa-solid fa-arrow-up"></i>
+</button>
+<button id="scrollToBottom" title="Scroll to bottom" aria-label="Scroll to bottom">
+  <i class="fa-solid fa-arrow-down"></i>
 </button>
 
 <!-- Chart.js -->

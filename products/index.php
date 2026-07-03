@@ -213,6 +213,13 @@ function show_form(){
         <div id="varWrap" class="variety-inputs">
           <div class="variety-row">
             <input type="text" name="varieties[]" class="form-control" placeholder="Variety name">
+            <select name="variety_units[]" class="form-control">
+              <?php foreach(['pcs'=>'Pieces','kg'=>'Kilograms','liter'=>'Liters','meter'=>'Meters','yard'=>'Yards','bag'=>'Bags','box'=>'Boxes'] as $uk=>$ul): ?>
+              <option value="<?php echo $uk; ?>"><?php echo $ul; ?></option>
+              <?php endforeach; ?>
+            </select>
+            <input type="text" name="variety_unit_customs[]" class="form-control" placeholder="Custom unit">
+            <input type="number" name="variety_unit_prices[]" class="form-control" step="0.01" min="0" placeholder="Unit price">
             <input type="number" name="variety_stocks[]" class="form-control" step="0.001" min="0" placeholder="Initial stock">
             <button type="button" class="btn btn-danger btn-sm remove-variety"><i class="fa-solid fa-xmark"></i></button>
           </div>
@@ -231,7 +238,7 @@ function show_form(){
 const vw=document.getElementById('varWrap');
 document.getElementById('addVarBtn').addEventListener('click',()=>{
   const r=document.createElement('div'); r.className='variety-row';
-  r.innerHTML='<input type="text" name="varieties[]" class="form-control" placeholder="Variety name"><input type="number" name="variety_stocks[]" class="form-control" step="0.001" min="0" placeholder="Initial stock"><button type="button" class="btn btn-danger btn-sm remove-variety"><i class="fa-solid fa-xmark"></i></button>';
+  r.innerHTML='<input type="text" name="varieties[]" class="form-control" placeholder="Variety name"><select name="variety_units[]" class="form-control'><option value="pcs">Pieces</option><option value="kg">Kilograms</option><option value="liter">Liters</option><option value="meter">Meters</option><option value="yard">Yards</option><option value="bag">Bags</option><option value="box">Boxes</option></select><input type="text" name="variety_unit_customs[]" class="form-control" placeholder="Custom unit"><input type="number" name="variety_unit_prices[]" class="form-control" step="0.01" min="0" placeholder="Unit price"><input type="number" name="variety_stocks[]" class="form-control" step="0.001" min="0" placeholder="Initial stock"><button type="button" class="btn btn-danger btn-sm remove-variety"><i class="fa-solid fa-xmark"></i></button>';
   vw.appendChild(r);
 });
 vw.addEventListener('click',e=>{ if(e.target.closest('.remove-variety')) e.target.closest('.variety-row')?.remove(); });
@@ -246,13 +253,21 @@ function add_product(){
   $ds=$db->prepare("SELECT COUNT(*) c FROM products WHERE LOWER(name)=LOWER(?)"); $ds->bind_param('s',$name); $ds->execute();
   if($ds->get_result()->fetch_assoc()['c']>0){ $ds->close(); $_SESSION['error']='Product name already exists.'; header('Location: ?action=add'); exit; }
   $ds->close();
-  $vnames=$_POST['varieties']??[]; $vstocks=$_POST['variety_stocks']??[]; $vars=[];
-  foreach($vnames as $i=>$vn){ $vn=trim($vn); $vs=(float)($vstocks[$i]??0); if($vn!=='') $vars[]=['name'=>$vn,'stock'=>$vs]; }
+  $vnames=$_POST['varieties']??[]; $vstocks=$_POST['variety_stocks']??[]; $vprices=$_POST['variety_unit_prices']??[]; $vunits=$_POST['variety_units']??[]; $vunit_customs=$_POST['variety_unit_customs']??[]; $vars=[];
+  foreach($vnames as $i=>$vn){
+    $vn=trim($vn);
+    $vs=(float)($vstocks[$i]??0);
+    $vp=(float)($vprices[$i]??0);
+    $vu=trim($vunits[$i]??'');
+    $vuc=trim($vunit_customs[$i]??'');
+    $unitValue = $vuc !== '' ? $vuc : ($vu ?: '');
+    if($vn!=='') $vars[]=['name'=>$vn,'stock'=>$vs,'unit_price'=>$vp,'unit'=>$unitValue];
+  }
   $uid=$_SESSION['user_id']??null;
   $unitValue = $unit_custom !== '' ? $unit_custom : $unit;
   $st=$db->prepare("INSERT INTO products (name,description,category,unit,created_by) VALUES (?,?,?,?,?)");
   $st->bind_param('ssssi',$name,$desc,$cat,$unitValue,$uid); $st->execute(); $pid=$db->insert_id; $st->close();
-  if($vars){ $vs=$db->prepare("INSERT INTO product_varieties (product_id,name,current_stock) VALUES (?,?,?)"); foreach($vars as $v){ $vs->bind_param('isd',$pid,$v['name'],$v['stock']); $vs->execute(); } $vs->close(); }
+  if($vars){ $vs=$db->prepare("INSERT INTO product_varieties (product_id,name,current_stock,unit_price,unit) VALUES (?,?,?,?,?)"); foreach($vars as $v){ $vs->bind_param('isdds',$pid,$v['name'],$v['stock'],$v['unit_price'],$v['unit']); $vs->execute(); } $vs->close(); }
   log_activity('product_add','Added: '.$name);
   $_SESSION['success']='Product added successfully.'; $db->close(); header('Location: index.php'); exit;
 }
@@ -298,6 +313,12 @@ function show_edit_form(){
       </div>
       <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="2"><?php echo htmlspecialchars($product['description']); ?></textarea></div>
       <div class="form-group">
+        <label class="form-label">Add New Varieties</label>
+        <div id="newVarWrap" class="variety-inputs"></div>
+        <button type="button" id="addNewVar" class="btn btn-secondary btn-sm" style="margin-top:8px;"><i class="fa-solid fa-plus"></i> Add Variety</button>
+        <p class="form-hint">Add one or more new product varieties. You can set an initial stock quantity for each.</p>
+      </div>
+      <div class="form-group">
         <label class="form-label">Existing Varieties</label>
         <div class="variety-inputs">
           <?php foreach($vars as $v): ?>
@@ -310,11 +331,6 @@ function show_edit_form(){
           <?php endforeach; ?>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Add New Varieties</label>
-        <div id="newVarWrap"></div>
-        <button type="button" id="addNewVar" class="btn btn-secondary btn-sm" style="margin-top:8px;"><i class="fa-solid fa-plus"></i> Add Variety</button>
-      </div>
       <div class="form-actions">
         <a href="index.php" class="btn btn-secondary"><i class="fa-solid fa-xmark"></i> Cancel</a>
         <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Update Product</button>
@@ -323,12 +339,13 @@ function show_edit_form(){
   </div>
 </div>
 <script>
+const newVarWrap = document.getElementById('newVarWrap');
 document.getElementById('addNewVar').addEventListener('click',()=>{
-  const w=document.getElementById('newVarWrap');
   const r=document.createElement('div'); r.className='variety-row';
-  r.innerHTML='<input type="text" name="new_varieties[]" class="form-control" placeholder="New variety name"><button type="button" class="btn btn-danger btn-sm" onclick="this.closest(\'.variety-row\').remove()"><i class="fa-solid fa-xmark"></i></button>';
-  w.appendChild(r);
+  r.innerHTML='<input type="text" name="new_varieties[]" class="form-control" placeholder="New variety name"><select name="new_variety_units[]" class="form-control"><option value="pcs">Pieces</option><option value="kg">Kilograms</option><option value="liter">Liters</option><option value="meter">Meters</option><option value="yard">Yards</option><option value="bag">Bags</option><option value="box">Boxes</option></select><input type="text" name="new_variety_unit_customs[]" class="form-control" placeholder="Custom unit"><input type="number" name="new_variety_unit_prices[]" class="form-control" step="0.01" min="0" placeholder="Unit price"><input type="number" name="new_variety_stocks[]" class="form-control" step="0.001" min="0" placeholder="Initial stock"><button type="button" class="btn btn-danger btn-sm remove-variety"><i class="fa-solid fa-xmark"></i></button>';
+  newVarWrap.appendChild(r);
 });
+newVarWrap.addEventListener('click',e=>{ const btn=e.target.closest('.remove-variety'); if(btn) btn.closest('.variety-row')?.remove(); });
 </script>
 <?php require __DIR__.'/../includes/footer.php'; }
 
@@ -347,9 +364,20 @@ function edit_product(){
     foreach($_POST['variety_ids'] as $vid=>$data){ $vn=trim($data['name']??''); if($vn){ $vs->bind_param('sii',$vn,$vid,$id); $vs->execute(); } }
     $vs->close();
   }
-  if(!empty($_POST['new_varieties'])){
-    $nv=$db->prepare("INSERT INTO product_varieties (product_id,name) VALUES (?,?)");
-    foreach($_POST['new_varieties'] as $vn){ $vn=trim($vn); if($vn){ $nv->bind_param('is',$id,$vn); $nv->execute(); } }
+  $newVarieties = $_POST['new_varieties'] ?? [];
+  $newStocks = $_POST['new_variety_stocks'] ?? [];
+  $newPrices = $_POST['new_variety_unit_prices'] ?? [];
+  $newUnits = $_POST['new_variety_units'] ?? [];
+  $newUnitCustoms = $_POST['new_variety_unit_customs'] ?? [];
+  if(!empty($newVarieties) && is_array($newVarieties)){
+    $nv=$db->prepare("INSERT INTO product_varieties (product_id,name,current_stock,unit_price,unit) VALUES (?,?,?,?,?)");
+    foreach($newVarieties as $index=>$vn){
+      $vn=trim($vn); if($vn==='') continue;
+      $stock = isset($newStocks[$index]) ? (float)$newStocks[$index] : 0.0;
+      $price = isset($newPrices[$index]) ? (float)$newPrices[$index] : 0.0;
+      $u = trim($newUnits[$index]??''); $uc = trim($newUnitCustoms[$index]??''); $unitVal = $uc!=='' ? $uc : ($u?:'');
+      $nv->bind_param('isdds',$id,$vn,$stock,$price,$unitVal); $nv->execute();
+    }
     $nv->close();
   }
   log_activity('product_edit','Edited: '.$name);

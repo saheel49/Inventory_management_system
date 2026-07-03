@@ -584,6 +584,12 @@ p, span, li, td, th, label, div { color: inherit; }
 }
 .form-label .req { color: var(--danger); margin-left: 2px; }
 
+.section-title {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-2); margin: 24px 0 10px;
+}
+
 .form-control {
   display: block; width: 100%;
   padding: 9px 13px;
@@ -1275,6 +1281,19 @@ body.dark-mode .action-badge.logout  { background: rgba(255,255,255,0.06); color
 }
 #backToTop.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
 #backToTop:hover   { background: var(--primary-dark); transform: translateY(-2px); }
+
+#scrollToBottom {
+  position: fixed; bottom: 22px; right: 22px; z-index: 500;
+  width: 40px; height: 40px;
+  background: var(--primary); color: #fff;
+  border-radius: 50%; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; box-shadow: var(--sh-md);
+  opacity: 0; transform: translateY(14px);
+  transition: var(--transition); pointer-events: none;
+}
+#scrollToBottom.visible { opacity: 1; transform: translateY(0); pointer-events: all; }
+#scrollToBottom:hover { background: var(--primary-dark); transform: translateY(-2px); }
 
 /* ----------------------------------------------------------
    29. DARK MODE – COMPLETE COMPONENT OVERRIDES
