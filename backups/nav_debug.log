@@ -1,0 +1,30 @@
+2026-07-03 08:22:07	REQUIRE_LOGIN	GET	/inventory_system/customers/index.php	no-session	http://localhost/inventory_system/dashboard.php
+2026-07-03 08:22:07	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 08:22:14	REQUIRE_LOGIN	GET	/inventory_system/customers/index.php	no-session	http://localhost/inventory_system/dashboard.php
+2026-07-03 08:22:14	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 08:22:16	REQUIRE_LOGIN	GET	/inventory_system/suppliers/index.php	no-session	http://localhost/inventory_system/dashboard.php
+2026-07-03 08:22:16	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:33:54	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/login.php
+2026-07-03 11:33:57	REQUIRE_LOGIN	GET	/inventory_system/customers/index.php	no-session	-	7qs6je2nifkor26rmone6ddlr1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:33:57	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:36:58	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:37:01	REQUIRE_LOGIN	GET	/inventory_system/customers/index.php	no-session	7qs6je2nifkor26rmone6ddlr1	7qs6je2nifkor26rmone6ddlr1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:37:01	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:37:04	REQUIRE_LOGIN	GET	/inventory_system/suppliers/index.php	no-session	7qs6je2nifkor26rmone6ddlr1	7qs6je2nifkor26rmone6ddlr1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:37:04	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:37:09	GET	/inventory_system/products/index.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:37:14	GET	/inventory_system/products/index.php?action=edit&id=630	1	http://localhost/inventory_system/products/index.php
+2026-07-03 11:37:19	REQUIRE_LOGIN	GET	/inventory_system/products/variety_edit.php?id=1256	no-session	7qs6je2nifkor26rmone6ddlr1	7qs6je2nifkor26rmone6ddlr1	http://localhost/inventory_system/products/index.php?action=edit&id=630
+2026-07-03 11:37:19	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/products/index.php?action=edit&id=630
+2026-07-03 11:43:02	GET	/inventory_system/dashboard.php	1	http://localhost/inventory_system/products/index.php?action=edit&id=630
+2026-07-03 11:43:05	GET	/inventory_system/customers/index.php	1	http://localhost/inventory_system/dashboard.php
+2026-07-03 11:43:09	GET	/inventory_system/products/index.php	1	http://localhost/inventory_system/customers/index.php
+2026-07-03 11:43:09	GET	/inventory_system/products/index.php	1	http://localhost/inventory_system/customers/index.php
+2026-07-03 11:43:11	GET	/inventory_system/products/index.php?action=edit&id=630	1	http://localhost/inventory_system/products/index.php
+2026-07-03 11:43:13	GET	/inventory_system/products/variety_edit.php?id=1256	1	http://localhost/inventory_system/products/index.php?action=edit&id=630
+2026-07-03 11:43:33	GET	/inventory_system/customers/index.php	1	http://localhost/inventory_system/products/variety_edit.php?id=1256
+2026-07-03 11:43:33	GET	/inventory_system/customers/index.php	1	http://localhost/inventory_system/products/variety_edit.php?id=1256
+2026-07-03 11:44:07	GET	/inventory_system/suppliers/index.php	1	http://localhost/inventory_system/customers/index.php
+2026-07-03 11:44:07	GET	/inventory_system/suppliers/index.php	1	http://localhost/inventory_system/customers/index.php
+2026-07-03 12:44:54	GET	/inventory_system/dashboard.php	1	-
+2026-07-03 12:44:59	GET	/inventory_system/customers/index.php	1	http://localhost/inventory_system/dashboard.php

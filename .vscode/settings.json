@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^if \\(Test-Path 'C:\\\\xampp\\\\php\\\\php\\.exe'\\) \\{ & 'C:\\\\xampp\\\\php\\\\php\\.exe' -l api/search\\.php customers/index\\.php suppliers/index\\.php products/index\\.php \\} else \\{ Write-Output 'xampp php not found'; \\}$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
