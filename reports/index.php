@@ -38,7 +38,7 @@ function doIndex(){
     <div style="min-width:160px;">
       <label class="form-label">Report Type</label>
       <select name="type" class="form-control">
-        <?php foreach(['daily'=>'Daily','weekly'=>'Weekly','monthly'=>'Monthly','yearly'=>'Yearly','product'=>'Product Stock','variety'=>'Variety Stock','customer'=>'Customer/Supplier','stock_movement'=>'Stock Movement','current_stock'=>'Current Stock','low_stock'=>'Low Stock'] as $k=>$l): ?>
+        <?php foreach(['daily'=>'Daily','weekly'=>'Weekly','monthly'=>'Monthly','yearly'=>'Yearly','product'=>'Product Stock','variety'=>'Variety Stock','customer'=>'Customer','supplier'=>'Supplier','stock_movement'=>'Stock Movement','current_stock'=>'Current Stock','low_stock'=>'Low Stock'] as $k=>$l): ?>
         <option value="<?php echo $k; ?>" <?php echo $sel===$k?'selected':''; ?>><?php echo $l; ?></option>
         <?php endforeach; ?>
       </select>
@@ -81,7 +81,7 @@ function doIndex(){
 <div class="card">
   <div class="card-header"><div class="card-title"><i class="fa-solid fa-th"></i> Quick Report Types</div></div>
   <div class="report-types-grid">
-    <?php $rtypes=[['daily','fa-calendar-day','Daily'],['weekly','fa-calendar-week','Weekly'],['monthly','fa-calendar','Monthly'],['yearly','fa-calendar-check','Yearly'],['product','fa-box-open','Products'],['variety','fa-layer-group','Varieties'],['customer','fa-users','Customers'],['stock_movement','fa-exchange-alt','Stock Movement'],['current_stock','fa-chart-pie','Current Stock'],['low_stock','fa-triangle-exclamation','Low Stock']];
+    <?php $rtypes=[['daily','fa-calendar-day','Daily'],['weekly','fa-calendar-week','Weekly'],['monthly','fa-calendar','Monthly'],['yearly','fa-calendar-check','Yearly'],['product','fa-box-open','Products'],['variety','fa-layer-group','Varieties'],['customer','fa-users','Customers'],['supplier','fa-truck','Suppliers'],['stock_movement','fa-exchange-alt','Stock Movement'],['current_stock','fa-chart-pie','Current Stock'],['low_stock','fa-triangle-exclamation','Low Stock']];
     foreach($rtypes as [$k,$ic,$n]): ?>
     <a href="?action=generate&type=<?php echo $k; ?>" class="rtc">
       <div class="rtc-icon"><i class="fa-solid <?php echo $ic; ?>"></i></div>
